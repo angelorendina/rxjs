@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="https://unpkg.com/rxjs/bundles/rxjs.umd.min.js"></script>
+  </head>
+  <body>
+    <input id="myInput">
+    <div>
+      Accepted: "<span id="myLabel"></span>".
+    </div>
+  </body>
+</html>
+
+<script>
+  const myInput = document.querySelector("#myInput");
+  const myLabel = document.querySelector("#myLabel");
+
+  const observable = rxjs.fromEvent(myInput, "input");
+  const pipedObservable = observable.pipe(
+    rxjs.operators.map(event => event.data),
+    rxjs.operators.filter(char => char >= "a" && char <= "z"),
+    rxjs.operators.scan((buffer, char) => buffer + char, "")
+  );
+  pipedObservable.subscribe((buffer) => {
+    myLabel.textContent = buffer;
+  });
+</script>

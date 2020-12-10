@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="https://unpkg.com/rxjs/bundles/rxjs.umd.min.js"></script>
+  </head>
+  <body>
+    <button id="myButton">
+      Push me!
+    </button>
+    <div>
+      Clicked at: <span id="myDate">never :(</span>.
+    </div>
+  </body>
+</html>
+
+<script>
+  const myButton = document.querySelector("#myButton");
+  const myDate = document.querySelector("#myDate");
+
+  const observable = rxjs.fromEvent(myButton, "click");
+  observable.subscribe(() => {
+    myDate.textContent = new Date();
+  });
+</script>

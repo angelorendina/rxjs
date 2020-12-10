@@ -1,0 +1,75 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="https://unpkg.com/rxjs/bundles/rxjs.umd.min.js"></script>
+  </head>
+  <body>
+    <div>
+      Observable value: <span id="myObservableLabel">none yet</span>
+      <button id="myObservableButton">Click to increase</button>
+    </div>
+    <div>
+      Click to add a new subscription to it:
+      <button id="myObservableNewSub">Subscribe</button>
+    </div>
+    <div>
+      <ul id="myObservableUL"></ul>
+    </div>
+    <hr>
+    <div>
+      Subject value: <span id="mySubjectLabel">none yet</span>
+      <button id="mySubjectButton">Click to increase</button>
+    </div>
+    <div>
+      Click to add a new subscription to it:
+      <button id="mySubjectNewSub">Subscribe</button>
+    </div>
+    <div>
+      <ul id="mySubjectUL"></ul>
+    </div>
+  </body>
+</html>
+
+<script>
+  const myObservableLabel = document.querySelector("#myObservableLabel");
+  const myObservableButton = document.querySelector("#myObservableButton");
+  const myObservableNewSub = document.querySelector("#myObservableNewSub");
+  const myObservableUL = document.querySelector("#myObservableUL");
+  const mySubjectLabel = document.querySelector("#mySubjectLabel");
+  const mySubjectButton = document.querySelector("#mySubjectButton");
+  const mySubjectNewSub = document.querySelector("#mySubjectNewSub");
+  const mySubjectUL = document.querySelector("#mySubjectUL");
+
+  const observable = rxjs.fromEvent(myObservableButton, "click").pipe(
+    rxjs.operators.scan(value => value + 1, 0)
+  );
+
+  observable.subscribe(value => {
+    myObservableLabel.textContent = value;
+  });
+
+  rxjs.fromEvent(myObservableNewSub, "click").subscribe(() => {
+    const li = document.createElement("li");
+    myObservableUL.appendChild(li);
+    observable.subscribe(value => {
+      li.textContent = value;
+    })
+  });
+
+  const subject = new rxjs.Subject();
+  rxjs.fromEvent(mySubjectButton, "click").pipe(
+    rxjs.operators.scan(value => value + 1, 0)
+  ).subscribe(value => subject.next(value));
+
+  subject.subscribe(value => {
+    mySubjectLabel.textContent = value;
+  });
+
+  rxjs.fromEvent(mySubjectNewSub, "click").subscribe(() => {
+    const li = document.createElement("li");
+    mySubjectUL.appendChild(li);
+    subject.subscribe(value => {
+      li.textContent = value;
+    })
+  });
+</script>

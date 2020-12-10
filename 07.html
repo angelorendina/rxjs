@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="https://unpkg.com/rxjs/bundles/rxjs.umd.min.js"></script>
+  </head>
+  <body>
+    <div>
+      <input type="checkbox" id="myCheck"><label>Run</label>
+      <button id="myButton">Stop</button>
+    </div>
+    <ul id="myUL"></ul>
+  </body>
+</html>
+
+<script>
+  const myUL = document.querySelector("#myUL");
+  const myCheck = document.querySelector("#myCheck");
+  const myButton = document.querySelector("#myButton");
+
+  const observable = rxjs.fromEvent(myCheck, "input").pipe(
+    rxjs.operators.map(event => event.target.checked),
+    rxjs.operators.switchMap(checked => (checked ? rxjs.interval(1000) : rxjs.empty())),
+    rxjs.operators.scan(value => value + 1, 0)
+  );
+
+  const mySubscription = observable.subscribe((value) => {
+    const li = document.createElement("li");
+    li.textContent = value;
+    myUL.appendChild(li);
+  });
+
+  rxjs.fromEvent(myButton, "click").subscribe(() => {
+    mySubscription.unsubscribe();
+    const li = document.createElement("li");
+    li.textContent = "Unsubscribed";
+    myUL.appendChild(li);
+  });
+</script>

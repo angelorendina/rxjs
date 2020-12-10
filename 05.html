@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="https://unpkg.com/rxjs/bundles/rxjs.umd.min.js"></script>
+  </head>
+  <body>
+    <ul id="myUL"></ul>
+    <ol id="myOL"></ol>
+  </body>
+</html>
+
+<script>
+  const myUL = document.querySelector("#myUL");
+  const myOL = document.querySelector("#myOL");
+
+  const observable = new rxjs.Observable(
+    (subscriber) => {
+      subscriber.next("a");
+      subscriber.next("b");
+      setTimeout(() => { subscriber.next("c"); }, 1000);
+      setTimeout(() => { subscriber.next("d"); }, 2000);
+      setTimeout(() => { subscriber.next("e"); }, 3000);
+    }
+  );
+
+  observable.subscribe((value) => {
+    const li = document.createElement("li");
+    li.textContent = value;
+    myUL.appendChild(li);
+  });
+
+  setTimeout(() => {
+    observable.subscribe((value) => {
+      const li = document.createElement("li");
+      li.textContent = value;
+      myOL.appendChild(li);
+    });
+  }, 500);
+</script>

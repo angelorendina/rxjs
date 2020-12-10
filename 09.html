@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="https://unpkg.com/rxjs/bundles/rxjs.umd.min.js"></script>
+  </head>
+  <body>
+    <div>
+      Subject value: <span id="mySubjectLabel">none yet</span>
+      <button id="mySubjectButton">Click to increase</button>
+    </div>
+    <div>
+      Click to add a new subscription to it:
+      <button id="mySubjectNewSub">Subscribe</button>
+    </div>
+    <div>
+      <ul id="mySubjectUL"></ul>
+    </div>
+  </body>
+</html>
+
+<script>
+  const mySubjectLabel = document.querySelector("#mySubjectLabel");
+  const mySubjectButton = document.querySelector("#mySubjectButton");
+  const mySubjectNewSub = document.querySelector("#mySubjectNewSub");
+  const mySubjectUL = document.querySelector("#mySubjectUL");
+
+  const subject = new rxjs.BehaviorSubject(0);
+
+  subject.subscribe(value => {
+    mySubjectLabel.textContent = value;
+  });
+
+  rxjs.fromEvent(mySubjectButton, "click").subscribe(() => {
+    subject.next(subject.getValue() + 1);
+  });
+
+  rxjs.fromEvent(mySubjectNewSub, "click").subscribe(() => {
+    const li = document.createElement("li");
+    mySubjectUL.appendChild(li);
+    subject.subscribe(value => {
+      li.textContent = value;
+    })
+  });
+</script>

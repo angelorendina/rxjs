@@ -1,0 +1,103 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="https://unpkg.com/rxjs/bundles/rxjs.umd.min.js"></script>
+  </head>
+  <body>
+    <div>
+      <select id="mySelect">
+        <option value="engine_autoselect" selected>Default</option>
+        <option value="classic">Classic</option>
+        <option value="fuzzy">Fuzzy</option>
+      </select>
+      <input id="mySearch" placeholder="Search">
+    </div>
+    <div id="myLabel">No request sent yet.</div>
+    <ul id="myUL"></ul>
+  </body>
+</html>
+
+<script>
+  const mySelect = document.querySelector("#mySelect");
+  const mySearch = document.querySelector("#mySearch");
+  const myLabel = document.querySelector("#myLabel");
+  const myUL = document.querySelector("#myUL")
+
+  const displayResults = function(results) {
+    myUL.textContent = "";
+    results.forEach(link => {
+      const li = document.createElement("li");
+      li.textContent = link;
+      myUL.appendChild(li);
+    });
+  }
+
+  rxjs.merge(
+    // emit { profile: 'option' } on select
+    rxjs.fromEvent(mySelect, "change").pipe(
+      rxjs.operators.map(event => ({ profile: event.target.value })),
+      rxjs.operators.startWith({ profile: "engine_autoselect" })
+    ),
+    // emit { search: 'text' } on input
+    rxjs.fromEvent(mySearch, "input").pipe(
+      rxjs.operators.throttleTime(100, rxjs.asyncScheduler, { leading: false, trailing: true }),
+      rxjs.operators.map(event => event.target.value),
+      rxjs.operators.scan((params, value) => {
+        return {
+          search: value,
+          oldSearch: params.search
+        };
+      }, {})
+    )
+  ).pipe(
+    // set up query params using incoming options
+    rxjs.operators.scan((params, query) => {
+      return {
+        ...params,
+        ...query
+      };
+    }, {
+      action: "opensearch",
+      format: "json",
+      origin: "*"
+    }),
+    // only proceed if we are actually typing/deleting
+    rxjs.operators.filter(params => params.search || params.oldSearch),
+    // perform actions depending on the params
+    rxjs.operators.switchMap(({ oldSearch, ...params }) => {
+      if (!params.search && oldSearch) {
+        // if we deleted the search text, abort net calls
+        return rxjs.of({ status: "cancelled" });
+      } else {
+        const search = Object.keys(params).map(
+          key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`
+        ).join("&");
+        return rxjs.merge(
+          // immediately set 'loading' status
+          rxjs.of({ status: "loading" }),
+          // make net call, and set 'resolved' status with data on response
+          rxjs.ajax.ajax(`https://en.wikipedia.org/w/api.php?${search}`).pipe(
+            rxjs.operators.map(request => ({ status: "resolved", ...request.response }))
+          )
+        );
+      }
+    }),
+  ).subscribe(response => {
+    // handle status
+    switch (response.status) {
+      case "loading":
+        myLabel.textContent = "Loading...";
+        displayResults([]);
+        break;
+      case "resolved":
+        const links = response[3];
+        myLabel.textContent = `Results (${links.length}):`;
+        displayResults(response[3]);
+        break;
+      case "cancelled":
+        myLabel.textContent = "Search was stopped.";
+        displayResults([]);
+        break;
+    }
+  });
+</script>

@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="https://unpkg.com/rxjs/bundles/rxjs.umd.min.js"></script>
+  </head>
+  <body>
+    <button id="myButton">Click me</button>
+    <ul id="myUL"></ul>
+  </body>
+</html>
+
+<script>
+  const myButton = document.querySelector("#myButton");
+  const myUL = document.querySelector("#myUL");
+
+  rxjs.merge(
+    rxjs.interval(1000).pipe(
+      rxjs.operators.map(count => `[Interval] ${count}`)
+    ),
+    rxjs.fromEvent(myButton, "click").pipe(
+      rxjs.operators.scan(clicks => clicks + 1, 0),
+      rxjs.operators.takeWhile(clicks => clicks < 5),
+      rxjs.operators.map(clicks => `[Click] ${clicks}`)
+    )
+  ).subscribe(value => {
+    const li = document.createElement("li");
+    li.textContent = value;
+    myUL.appendChild(li);
+  });
+</script>

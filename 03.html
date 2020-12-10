@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="https://unpkg.com/rxjs/bundles/rxjs.umd.min.js"></script>
+  </head>
+  <body>
+    <input id="myInput">
+    <div>
+      Last input: <span id="myLabel">none :(</span>.
+    </div>
+  </body>
+</html>
+
+<script>
+  const myInput = document.querySelector("#myInput");
+  const myLabel = document.querySelector("#myLabel");
+
+  const observable = rxjs.operators.map(event => event.data)(
+    rxjs.fromEvent(myInput, "input")
+  );
+  observable.subscribe((value) => {
+    myLabel.textContent = value;
+  });
+</script>
